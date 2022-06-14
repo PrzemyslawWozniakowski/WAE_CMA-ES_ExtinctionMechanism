@@ -54,12 +54,19 @@ function xmin=purecmaes
                                       %   ||N(0,I)|| == norm(randn(N,1))
   out.dat = []; out.datx = [];  % for plotting output
 
+  % -------------------- Extinction settings --------------------------------
+  c_extinction = 0.1;                   % parameter that specifies when we perform extinction
+  extinction_type = 1;                % extinction type (0 - none, 1 - directed, 2 - random)
+  p_extinction = 0.9;
+  k_extinction = 0.75;
+  min_lambda_fraction = 0.3;
+  initial_lambda = lambda;
   % -------------------- Generation Loop --------------------------------
   counteval = 0;  % the next 40 lines contain the 20 lines of interesting code 
   while counteval < stopeval
     
     % Generate and evaluate lambda offspring
-    for k=1:lambda,
+    for k=1:lambda
       arx(:,k) = xmean + sigma * B * (D .* randn(N,1)); % m + sig * Normal(0,C) 
       arfitness(k) = feval(strfitnessfct, arx(:,k)); % objective function call
       counteval = counteval+1;
@@ -70,6 +77,19 @@ function xmin=purecmaes
     xold = xmean;
     xmean = arx(:,arindex(1:mu)) * weights;  % recombination, new mean value
     
+    % ----------------------- Extinction ----------------------------------
+    if abs(norm(xmean-xold)) < c_extinction && (min_lambda_fraction*initial_lambda) > lambda
+        if extinction_type ~= 0
+            if extinction_type == 1
+                [arx, arfitness, arindex, lambda] = directed_extinction(arx, arfitness, arindex, floor(k_extinction*lambda), p_extinction);
+            end
+            if extinction_type == 2
+                [arx, arfitness, arindex, lambda] = random_extinction(arx, arfitness, arindex, p_extinction);
+            end
+        end
+    end
+    % ---------------------------------------------------------------------
+
     % Cumulation: Update evolution paths
     ps = (1-cs) * ps ... 
           + sqrt(cs*(2-cs)*mueff) * invsqrtC * (xmean-xold) / sigma; 
@@ -198,6 +218,4 @@ function f=frand(x)
 % Hansen, N., S.D. Mueller and P. Koumoutsakos (2003). Reducing the
 % Time Complexity of the Derandomized Evolution Strategy with
 % Covariance Matrix Adaptation (CMA-ES). Evolutionary Computation,
-% 11(1).  (http://mitpress.mit.edu/journals/pdf/evco_11_1_1_0.pdf).
-%
-
+% 11(1).  (http://mitpress.mit.edu/journals/pdf/evco_1
