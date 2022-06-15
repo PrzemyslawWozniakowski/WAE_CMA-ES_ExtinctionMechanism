@@ -10,19 +10,10 @@ function xmin=purecmaes
 
   % Strategy parameter setting: Selection
   lambda = 4+floor(3*log(N));  % population size, offspring number
-  mu = lambda/2;               % number of parents/points for recombination
-  weights = log(mu+1/2)-log(1:mu)'; % muXone array for weighted recombination
-  mu = floor(mu);
-  weights = weights/sum(weights);     % normalize recombination weights array
-  mueff=sum(weights)^2/sum(weights.^2); % variance-effectiveness of sum w_i x_i
-
-  % Strategy parameter setting: Adaptation
-  cc = (4 + mueff/N) / (N+4 + 2*mueff/N); % time constant for cumulation for C
-  cs = (mueff+2) / (N+mueff+5);  % t-const for cumulation for sigma control
-  c1 = 2 / ((N+1.3)^2+mueff);    % learning rate for rank-one update of C
-  cmu = min(1-c1, 2 * (mueff-2+1/mueff) / ((N+2)^2+mueff));  % and for rank-mu update
-  damps = 1 + 2*max(0, sqrt((mueff-1)/(N+1))-1) + cs; % damping for sigma
-                                                      % usually close to 1
+  
+  % Additional parameters for selection and adaptation
+  [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, N);
+  
   % Initialize dynamic (internal) strategy parameters and constants
   pc = zeros(N,1); ps = zeros(N,1);   % evolution paths for C and sigma
   B = eye(N,N);                       % B defines the coordinate system
@@ -35,8 +26,8 @@ function xmin=purecmaes
   out.dat = []; out.datx = [];  % for plotting output
 
   % -------------------- Extinction settings --------------------------------
-  c_extinction = 0.1;                   % parameter that specifies when we perform extinction
-  extinction_type = 2;                  % extinction type (0 - none, 1 - directed, 2 - random)
+  c_extinction = 0.1;                   % threshold for difference between subsequent generations to call them stagnant
+  extinction_type = 0;                  % extinction type (0 - none, 1 - directed, 2 - random)
   p_extinction = 0.9;
   k_extinction = 0.75;
   count_stagnant = 0;                    % counter for currently stagnant generations
@@ -60,15 +51,16 @@ function xmin=purecmaes
     xmean = arx(:,arindex(1:mu)) * weights;  % recombination, new mean value
 
     % ----------------------- Extinction ----------------------------------
-    if extinction_type ~= 0  && lambda > min_lambda
+    if extinction_type ~= 0  && lambda > ceil(min_lambda)
       if abs(norm(xmean-xold)) < c_extinction
         count_stagnant = count_stagnant + 1;
         if count_stagnant >= extinction_trigger
           if extinction_type == 1
-            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, 0, floor(k_extinction*lambda));
+            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, 0, floor(k_extinction*lambda));
           elseif extinction_type == 2
-            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, 0);
+            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, 0);
           end
+          [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, N);
         end
       else
         count_stagnant = 0;
@@ -119,19 +111,22 @@ function xmin=purecmaes
                              % Notice that xmean is expected to be even
                              % better.
 
-  figure(1); hold off; plot(out.datx);
-  title('Krzywe zbieżności'); grid on; 
-  xlabel('Iteracje'); ylabel('Wartość x_i = argmin_i(f)');
+  figure(1); hold off; 
+  plot(out.datx);
+  title('Krzywe zbieżności'); 
+  grid on; xlabel('Iteracje'); ylabel('Wartość x_i = argmin_i(f)');
 
   % Matlab throws warning if fplot function does not support every
   % imaginable variation of input vector shape and then uses slower
   % non-vector operations. We're okay with that slow one but don't want
   % warnings.
-  warning off MATLAB:fplot:NotVectorized
-  figure(2); hold off; fplot(@(x)(sum(arx' <= x))/lambda); 
-  title('Dystrybuanta empiryczna dla ostatniej iteracji'); grid on; 
-  xlabel('x_i'); ylabel('Wartość'); ylim([0 1.2]); hold off;
-  warning off MATLAB:fplot:NotVectorized
+  figure(2); hold on;
+  for n = 1:N 
+    ecdf(arx(n, :)); 
+  end
+  hold off;
+  title('Dystrybuanta empiryczna dla ostatniej iteracji'); 
+  grid on; xlabel('x_i'); ylabel('Wartość');
 
 % ---------------------------------------------------------------
 function f=frosenbrock(x)
