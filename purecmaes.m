@@ -65,9 +65,9 @@ function xmin=purecmaes
         count_stagnant = count_stagnant + 1;
         if count_stagnant >= extinction_trigger
           if extinction_type == 1
-            [arx, arfitness, arindex, lambda] = directed_extinction(arx, arfitness, arindex, floor(k_extinction*lambda), p_extinction);
+            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, 0, floor(k_extinction*lambda));
           elseif extinction_type == 2
-            [arx, arfitness, arindex, lambda] = random_extinction(arx, arfitness, arindex, p_extinction);
+            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, 0);
           end
         end
       else
