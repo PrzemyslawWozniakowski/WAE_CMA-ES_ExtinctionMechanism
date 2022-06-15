@@ -36,11 +36,13 @@ function xmin=purecmaes
 
   % -------------------- Extinction settings --------------------------------
   c_extinction = 0.1;                   % parameter that specifies when we perform extinction
-  extinction_type = 1;                  % extinction type (0 - none, 1 - directed, 2 - random)
+  extinction_type = 2;                  % extinction type (0 - none, 1 - directed, 2 - random)
   p_extinction = 0.9;
   k_extinction = 0.75;
+  count_stagnant = 0;                    % counter for currently stagnant generations
+  extinction_trigger = 100;              % limit of stagnant generations which triggers extinction 
   min_lambda_fraction = 0.3;
-  initial_lambda = lambda;
+  min_lambda = min_lambda_fraction * lambda;
   % -------------------- Generation Loop --------------------------------
   counteval = 0;  % the next 40 lines contain the 20 lines of interesting code
   while counteval < stopeval
@@ -58,15 +60,19 @@ function xmin=purecmaes
     xmean = arx(:,arindex(1:mu)) * weights;  % recombination, new mean value
 
     % ----------------------- Extinction ----------------------------------
-    if abs(norm(xmean-xold)) < c_extinction && (min_lambda_fraction*initial_lambda) > lambda
-        if extinction_type ~= 0
-            if extinction_type == 1
-                [arx, arfitness, arindex, lambda] = directed_extinction(arx, arfitness, arindex, floor(k_extinction*lambda), p_extinction);
-            end
-            if extinction_type == 2
-                [arx, arfitness, arindex, lambda] = random_extinction(arx, arfitness, arindex, p_extinction);
-            end
+    if extinction_type ~= 0  && lambda > min_lambda
+      if abs(norm(xmean-xold)) < c_extinction
+        count_stagnant = count_stagnant + 1;
+        if count_stagnant >= extinction_trigger
+          if extinction_type == 1
+            [arx, arfitness, arindex, lambda] = directed_extinction(arx, arfitness, arindex, floor(k_extinction*lambda), p_extinction);
+          elseif extinction_type == 2
+            [arx, arfitness, arindex, lambda] = random_extinction(arx, arfitness, arindex, p_extinction);
+          end
         end
+      else
+        count_stagnant = 0;
+      end
     end
     % ---------------------------------------------------------------------
 

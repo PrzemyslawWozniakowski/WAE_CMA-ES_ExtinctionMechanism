@@ -6,21 +6,21 @@ if nargin < 5
 end
 rng(seed);
 
-new_arx = zeros(1,length(arx));
-new_arindex = zeros(1,length(arx));
-new_arfitness = zeros(1,length(arx));
+new_arx = zeros(size(arx));
+new_arindex = zeros(size(arindex));
+new_arfitness = zeros(size(arfitness));
 new_lambda = 0;
 
-for i = 1:length(arx)
+for i = 1:width(arx)
     if rand < 1 - p
         new_lambda = new_lambda + 1;
-        new_arx(new_lambda) = arx(i);
+        new_arx(:, new_lambda) = arx(:, i);
         new_arindex = arindex(i);
         new_arfitness(new_lambda) = arfitness(arindex(i));
     end
 end
 
-new_arx = new_arx(1:new_lambda);
+new_arx = new_arx(:, 1:new_lambda);
 new_arindex = new_arindex(1:new_lambda);
 new_arfitness = new_arfitness(1:new_lambda);
 
