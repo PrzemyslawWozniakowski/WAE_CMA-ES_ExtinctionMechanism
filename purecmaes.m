@@ -23,11 +23,11 @@ function xmin=purecmaes
   eigeneval = 0;                      % track update of B and D
   chiN=N^0.5*(1-1/(4*N)+1/(21*N^2));  % expectation of
                                       %   ||N(0,I)|| == norm(randn(N,1))
-  out.dat = []; out.datx = [];  % for plotting output
+  out.datx = [];  % for plotting output
 
   % -------------------- Extinction settings --------------------------------
   c_extinction = 0.1;                   % threshold for difference between subsequent generations to call them stagnant
-  extinction_type = 0;                  % extinction type (0 - none, 1 - directed, 2 - random)
+  extinction_type = 2;                  % extinction type (0 - none, 1 - directed, 2 - random)
   p_extinction = 0.9;
   k_extinction = 0.75;
   count_stagnant = 0;                    % counter for currently stagnant generations
@@ -100,8 +100,6 @@ function xmin=purecmaes
     end
 
     % Output
-    % with long runs, the next line becomes time consuming
-    out.dat = [out.dat; arfitness(1) sigma 1e5*D' ];
     out.datx = [out.datx; xmean'];
   end % while, end generation loop
 
@@ -126,7 +124,7 @@ function xmin=purecmaes
   end
   hold off;
   title('Dystrybuanta empiryczna dla ostatniej iteracji'); 
-  grid on; xlabel('x_i'); ylabel('Wartość');
+  grid on; ylim([0 1.1]); xlabel('x_i'); ylabel('Wartość');
 
 % ---------------------------------------------------------------
 function f=frosenbrock(x)
