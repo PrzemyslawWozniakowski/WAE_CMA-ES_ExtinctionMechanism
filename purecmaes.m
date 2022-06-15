@@ -51,19 +51,22 @@ function xmin=purecmaes
     xmean = arx(:,arindex(1:mu)) * weights;  % recombination, new mean value
 
     % ----------------------- Extinction ----------------------------------
-    if extinction_type ~= 0  && lambda > ceil(min_lambda)
-      if abs(norm(xmean-xold)) < c_extinction
+    if extinction_type ~= 0  && lambda > ceil(min_lambda) % If extinction should be considered
+      if abs(norm(xmean-xold)) < c_extinction % If popuplation is stagnant, increase counter
         count_stagnant = count_stagnant + 1;
         if count_stagnant >= extinction_trigger
-          if extinction_type == 1
+          old_lambda = lambda;
+          if extinction_type == 1 % Targeted extinction
             [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, 0, floor(k_extinction*lambda));
-          elseif extinction_type == 2
+          elseif extinction_type == 2 % Random extinction
             [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, 0);
           end
-          [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, N);
+          if lambda ~= old_lambda % Update params for new population size after extinction
+            [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, N); 
+          end
         end
       else
-        count_stagnant = 0;
+        count_stagnant = 0; % Reset the counter if population is not stagnant
       end
     end
     % ---------------------------------------------------------------------
@@ -109,15 +112,13 @@ function xmin=purecmaes
                              % Notice that xmean is expected to be even
                              % better.
 
+  % Convergence curve
   figure(1); hold off; 
   plot(out.datx);
   title('Krzywe zbieżności'); 
   grid on; xlabel('Iteracje'); ylabel('Wartość x_i = argmin_i(f)');
 
-  % Matlab throws warning if fplot function does not support every
-  % imaginable variation of input vector shape and then uses slower
-  % non-vector operations. We're okay with that slow one but don't want
-  % warnings.
+  % Empirical cumulative distribution function plot
   figure(2); hold on;
   for n = 1:N 
     ecdf(arx(n, :)); 
@@ -127,6 +128,7 @@ function xmin=purecmaes
   grid on; ylim([0 1.1]); xlabel('x_i'); ylabel('Wartość');
 
 % ---------------------------------------------------------------
+% Functions for test purposes
 function f=frosenbrock(x)
   if size(x,1) < 2 error('dimension must be greater one'); end
   f = 100*sum((x(1:end-1).^2 - x(2:end)).^2) + sum((x(1:end-1)-1).^2);
