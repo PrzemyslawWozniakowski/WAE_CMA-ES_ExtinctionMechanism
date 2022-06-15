@@ -114,17 +114,13 @@ function xmin=purecmaes
                              % better.
 
   figure(1); hold off; plot(out.datx);
-  title('Krzywe zbieżności'); grid on; 
-  xlabel('Iteracje'); ylabel('Wartość x_i = argmin_i(f)');
+  title('Krzywe zbieżności'); grid on; xlabel('Iteracje'); ylabel('Wartość x_i = argmin_i(f)');
 
   % Matlab throws warning if fplot function does not support every
-  % imaginable variation of input vector shape and then uses slower
-  % non-vector operations. We're okay with that slow one but don't want
-  % warnings.
+  % imaginable variation of input vector shape and 
   warning off MATLAB:fplot:NotVectorized
   figure(2); hold off; fplot(@(x)(sum(arx' <= x))/lambda); 
-  title('Dystrybuanta empiryczna dla ostatniej iteracji'); grid on; 
-  xlabel('x_i'); ylabel('Wartość'); ylim([0 1.2]); hold off;
+  title('Dystrybuanta empiryczna dla ostatniej iteracji'); grid on; xlabel('x_i'); ylabel('Wartość'); ylim([0 1.2]);
   warning off MATLAB:fplot:NotVectorized
 
 % ---------------------------------------------------------------
