@@ -1,7 +1,6 @@
-function xmin=purecmaes
+function xmin=purecmaes(fitness_function)
   % --------------------  Initialization --------------------------------
   % User defined input parameters (need to be edited)
-  strfitnessfct = 'frosenbrock';  % name of objective/fitness function
   N = 13;               % number of objective variables/problem dimension
   xmean = rand(N,1);    % objective variables initial point
   sigma = 0.5;          % coordinate wise standard deviation (step size)
@@ -41,7 +40,7 @@ function xmin=purecmaes
     % Generate and evaluate lambda offspring
     for k=1:lambda
       arx(:,k) = xmean + sigma * B * (D .* randn(N,1)); % m + sig * Normal(0,C)
-      arfitness(k) = feval(strfitnessfct, arx(:,k)); % objective function call
+      arfitness(k) = feval(fitness_function, arx(:,k)); % objective function call
       counteval = counteval+1;
     end
 
@@ -126,62 +125,4 @@ function xmin=purecmaes
   hold off;
   title('Dystrybuanta empiryczna dla ostatniej iteracji'); 
   grid on; ylim([0 1.1]); xlabel('x_i'); ylabel('Wartość');
-
-% ---------------------------------------------------------------
-% Functions for test purposes
-function f=frosenbrock(x)
-  if size(x,1) < 2 error('dimension must be greater one'); end
-  f = 100*sum((x(1:end-1).^2 - x(2:end)).^2) + sum((x(1:end-1)-1).^2);
-
-function f=fsphere(x)
-  f=sum(x.^2);
-
-function f=fssphere(x)
-  f=sqrt(sum(x.^2));
-
-function f=fschwefel(x)
-  f = 0;
-  for i = 1:size(x,1)
-    f = f+sum(x(1:i))^2;
-  end
-
-function f=fcigar(x)
-  f = x(1)^2 + 1e6*sum(x(2:end).^2);
-
-function f=fcigtab(x)
-  f = x(1)^2 + 1e8*x(end)^2 + 1e4*sum(x(2:(end-1)).^2);
-
-function f=ftablet(x)
-  f = 1e6*x(1)^2 + sum(x(2:end).^2);
-
-function f=felli(x)
-  N = size(x,1); if N < 2 error('dimension must be greater one'); end
-  f=1e6.^((0:N-1)/(N-1)) * x.^2;
-
-function f=felli100(x)
-  N = size(x,1); if N < 2 error('dimension must be greater one'); end
-  f=1e4.^((0:N-1)/(N-1)) * x.^2;
-
-function f=fplane(x)
-  f=x(1);
-
-function f=ftwoaxes(x)
-  f = sum(x(1:floor(end/2)).^2) + 1e6*sum(x(floor(1+end/2):end).^2);
-
-function f=fparabR(x)
-  f = -x(1) + 100*sum(x(2:end).^2);
-
-function f=fsharpR(x)
-  f = -x(1) + 100*norm(x(2:end));
-
-function f=fdiffpow(x)
-  N = size(x,1); if N < 2 error('dimension must be greater one'); end
-  f=sum(abs(x).^(2+10*(0:N-1)'/(N-1)));
-
-function f=frastrigin10(x)
-  N = size(x,1); if N < 2 error('dimension must be greater one'); end
-  scale=10.^((0:N-1)'/(N-1));
-  f = 10*size(x,1) + sum((scale.*x).^2 - 10*cos(2*pi*(scale.*x)));
-
-function f=frand(x)
-  f=rand;
+end
