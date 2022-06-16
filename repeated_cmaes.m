@@ -6,13 +6,14 @@ function [xmin, out]=repeated_cmaes(fitness_function, dimensions, repetitions, e
     extinction_type = 0;
   end
 
-  % TODO: Generate array with seeds
+  rng(0) % Change 0 to another non-negative integer for different set of results or to 'shuffle' for random results each time
+  seeds = randi(2^31, repetitions, 1);
   
   xmin = zeros(dimensions, 1);
   out.datx = [];
   out.arx = [];
   for i = 1:repetitions
-    [temp_xmin, temp_out] = purecmaes(fitness_function, dimensions, extinction_type);
+    [temp_xmin, temp_out] = purecmaes(fitness_function, dimensions, extinction_type, seeds(i));
     % Update mean value in xmin
     xmin = ((i - 1) * xmin + temp_xmin) / i;
     % Update mean value in out.datx
@@ -31,7 +32,6 @@ function [xmin, out]=repeated_cmaes(fitness_function, dimensions, repetitions, e
       temp_out.datx = [temp_out.datx; repmat(last, diff , 1)];
       out.datx = ((i-1) * out.datx + temp_out.datx) / i;
     end
-
     % Update mean value in out.arx (same as above, but transposed and with different variable)
     if width(out.arx) == 0
       out.arx = temp_out.arx;

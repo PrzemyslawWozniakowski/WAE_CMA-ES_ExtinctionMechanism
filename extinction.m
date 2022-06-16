@@ -1,17 +1,11 @@
-function [new_arx, new_arfitness, new_arindex, new_lambda] = extinction(arx, arfitness, arindex, p, min_lambda, seed, k)
+function [new_arx, new_arfitness, new_arindex, new_lambda] = extinction(arx, arfitness, arindex, p, min_lambda, k)
 % Function keeps k best elements from arx array if k is set and randomly
 % remove the rest
 % If k is not set, fitness value is ignored and every element can be removed
 
-if nargin < 7
+if nargin < 6
   k = 0;
 end
-
-if nargin < 6
-  seed = 0;
-end
-
-rng(seed)
 
 new_arx = zeros(size(arx));
 new_arfitness = zeros(size(arfitness));

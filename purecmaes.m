@@ -1,9 +1,14 @@
-function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type)
+function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type, seed)
 % fitness_function - objective/fitness function 
 % dimensions - number of objective variables/problem dimension
 % extinction type - (0 - none, 1 - directed, 2 - random)
   
   % --------------------  Initialization --------------------------------
+  % Random numbers generator
+  if nargin < 4 
+    seed = 'shuffle'; 
+  end
+  rng(seed)
   % User defined input parameters (need to be edited)
   xmean = rand(dimensions,1);    % objective variables initial point
   sigma = 0.5;          % coordinate wise standard deviation (step size)
@@ -29,7 +34,6 @@ function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type)
 
   % -------------------- Extinction settings --------------------------------
   c_extinction = 0.1;                   % threshold for difference between subsequent generations to call them stagnant
-  if nargin < 3 extinction_type = 0; end
   p_extinction = 0.9;
   k_extinction = 0.75;
   count_stagnant = 0;                    % counter for currently stagnant generations
@@ -59,9 +63,9 @@ function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type)
         if count_stagnant >= extinction_trigger
           old_lambda = lambda;
           if extinction_type == 1 % Targeted extinction
-            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, 0, floor(k_extinction*lambda));
+            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, floor(k_extinction*lambda));
           elseif extinction_type == 2 % Random extinction
-            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, 0);
+            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda);
           end
           if lambda ~= old_lambda % Update params for new population size after extinction
             [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, dimensions); 
@@ -109,7 +113,7 @@ function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type)
   end % while, end generation loop
 
   % ------------- Final Message and Plotting Figures --------------------
-  disp(['Ostatnia iteracja: ' num2str(counteval) ', Wynik: ' num2str(arfitness(1)) ', Typ wymarcia: ' num2str(extinction_type)]);
+  disp(['Ostatnia iteracja: ' num2str(counteval) ', Wynik: ' num2str(arfitness(1)) ', Typ wymarcia: ' num2str(extinction_type) ', Seed: ' num2str(seed)]);
   xmin = arx(:, arindex(1)); % Return best point of last iteration.
                              % Notice that xmean is expected to be even
                              % better.
