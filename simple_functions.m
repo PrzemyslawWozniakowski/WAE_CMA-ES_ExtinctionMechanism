@@ -84,5 +84,9 @@ classdef simple_functions
     function f=frand(~)
       f=rand;
     end
+
+    function f=fackley(x)
+        f=20*(1-exp(-0.2*sqrt(mean(x.^2))))+exp(1)-exp(mean(cos(2*pi*x)));
+    end
   end
 end
