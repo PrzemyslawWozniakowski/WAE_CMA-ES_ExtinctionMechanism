@@ -1,11 +1,11 @@
-function [xmin, out]=cmaes(fitness_function, dimensions, extinction_type, seed)
+function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinction_type, seed, lambda)
 % fitness_function - objective/fitness function 
 % dimensions - number of objective variables/problem dimension
 % extinction type - (0 - none, 1 - directed, 2 - random)
   
   % --------------------  Initialization --------------------------------
   % Random numbers generator
-  if nargin < 4 
+  if nargin < 4
     seed = 'shuffle'; 
   end
   rng(seed)
@@ -16,7 +16,9 @@ function [xmin, out]=cmaes(fitness_function, dimensions, extinction_type, seed)
   stopeval = 1e3*dimensions^2;   % stop after stopeval number of function evaluations
 
   % Strategy parameter setting: Selection
-  lambda = 4+floor(3*log(dimensions));  % population size, offspring number
+  if nargin < 5
+    lambda = 310;
+  end
   
   % Additional parameters for selection and adaptation
   [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, dimensions);
@@ -34,10 +36,10 @@ function [xmin, out]=cmaes(fitness_function, dimensions, extinction_type, seed)
 
   % -------------------- Extinction settings --------------------------------
   c_extinction = 0.1;                   % threshold for difference between subsequent generations to call them stagnant
-  p_extinction = 0.9;
-  k_extinction = 0.75;
+  p_extinction = 0.5;
+  k_extinction = 0.2;
   count_stagnant = 0;                    % counter for currently stagnant generations
-  extinction_trigger = 100;              % limit of stagnant generations which triggers extinction 
+  extinction_trigger = 20;              % limit of stagnant generations which triggers extinction 
   min_lambda_fraction = 0.3;
   min_lambda = min_lambda_fraction * lambda;
   % -------------------- Generation Loop --------------------------------
@@ -113,9 +115,10 @@ function [xmin, out]=cmaes(fitness_function, dimensions, extinction_type, seed)
   end % while, end generation loop
 
   % ------------- Final Message and Plotting Figures --------------------
-  disp(['Ostatnia iteracja: ' num2str(counteval) ', Wynik: ' num2str(arfitness(1)) ', Typ wymarcia: ' num2str(extinction_type) ', Seed: ' num2str(seed)]);
+%   disp(['Oszacowań funkcji: ' num2str(counteval) ', Wynik: ' num2str(arfitness(1)) ', Typ wymarcia: ' num2str(extinction_type) ', Seed: ' num2str(seed)]);
   xmin = arx(:, arindex(1)); % Return best point of last iteration.
                              % Notice that xmean is expected to be even
                              % better.
-  out.arx = arx;             % Return points from last generation
+  fitnessmin = arfitness(1); % Return fitness for bes point of last iteration.
+  out.arx = arx;             % Return points from last generation.
 end
