@@ -1,4 +1,4 @@
-function [new_arx, new_arfitness, new_arindex, new_lambda] = extinction(arx, arfitness, arindex, p, min_lambda, k)
+function [new_arx, new_arfitness, new_arindex, new_lambda] = apply_extinction(arx, arfitness, arindex, p, min_lambda, k)
 % Function keeps k best elements from arx array if k is set and randomly
 % remove the rest
 % If k is not set, fitness value is ignored and every element can be removed

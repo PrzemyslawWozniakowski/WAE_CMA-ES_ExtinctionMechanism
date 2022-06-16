@@ -1,4 +1,4 @@
-function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type, seed)
+function [xmin, out]=cmaes(fitness_function, dimensions, extinction_type, seed)
 % fitness_function - objective/fitness function 
 % dimensions - number of objective variables/problem dimension
 % extinction type - (0 - none, 1 - directed, 2 - random)
@@ -63,9 +63,9 @@ function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type, se
         if count_stagnant >= extinction_trigger
           old_lambda = lambda;
           if extinction_type == 1 % Targeted extinction
-            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, floor(k_extinction*lambda));
+            [arx, arfitness, arindex, lambda] = apply_extinction(arx, arfitness, arindex, p_extinction, min_lambda, floor(k_extinction*lambda));
           elseif extinction_type == 2 % Random extinction
-            [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda);
+            [arx, arfitness, arindex, lambda] = apply_extinction(arx, arfitness, arindex, p_extinction, min_lambda);
           end
           if lambda ~= old_lambda % Update params for new population size after extinction
             [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, dimensions); 

@@ -1,4 +1,4 @@
-function [xmin, out]=repeated_cmaes(fitness_function, dimensions, repetitions, extinction_type)
+function [xmin, out]=repeat_cmaes(fitness_function, dimensions, repetitions, extinction_type)
   % fitness_function - objective/fitness function 
   % dimensions - number of objective variables/problem dimension
   % extinction type - (0 - none, 1 - directed, 2 - random)
@@ -13,7 +13,7 @@ function [xmin, out]=repeated_cmaes(fitness_function, dimensions, repetitions, e
   out.datx = [];
   out.arx = [];
   for i = 1:repetitions
-    [temp_xmin, temp_out] = purecmaes(fitness_function, dimensions, extinction_type, seeds(i));
+    [temp_xmin, temp_out] = cmaes(fitness_function, dimensions, extinction_type, seeds(i));
     % Update mean value in xmin
     xmin = ((i - 1) * xmin + temp_xmin) / i;
     % Update mean value in out.datx

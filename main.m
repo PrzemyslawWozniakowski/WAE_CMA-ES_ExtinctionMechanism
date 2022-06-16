@@ -1,7 +1,7 @@
 dimensions = 13;
 
 for extinction_type = 0:2
-  [x, out] = repeated_cmaes(@simple_functions.frosenbrock, dimensions, 5, extinction_type);
+  [x, out] = repeat_cmaes(@simple_functions.frosenbrock, dimensions, 5, extinction_type);
 
   % Convergence curve
   figure(1);
@@ -23,11 +23,11 @@ for extinction_type = 0:2
   grid on; ylim([0 1.1]); xlabel('x_i'); ylabel('Wartość');
 end
 
-% purecmaes(@simple_functions.frosenbrock, dimensions, 0, 0);
+% cmaes(@simple_functions.frosenbrock, dimensions, 0, 0);
 
 % Example for calling inline function
-% purecmaes(@(x)(sum(x.^2)), dimensions, 0, 0);
+% cmaes(@(x)(sum(x.^2)), dimensions, 0, 0);
 
 % Example for calling some function from variable
 % test_fun = @(x) (sum(x.^2));
-% purecmaes(test_fun, dimensions, 0, 0)
+% cmaes(test_fun, dimensions, 0, 0)
