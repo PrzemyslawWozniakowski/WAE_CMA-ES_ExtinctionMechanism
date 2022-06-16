@@ -1,32 +1,35 @@
-function xmin=purecmaes(fitness_function)
+function [xmin, out]=purecmaes(fitness_function, dimensions, extinction_type)
+% fitness_function - objective/fitness function 
+% dimensions - number of objective variables/problem dimension
+% extinction type - (0 - none, 1 - directed, 2 - random)
+  
   % --------------------  Initialization --------------------------------
   % User defined input parameters (need to be edited)
-  N = 13;               % number of objective variables/problem dimension
-  xmean = rand(N,1);    % objective variables initial point
+  xmean = rand(dimensions,1);    % objective variables initial point
   sigma = 0.5;          % coordinate wise standard deviation (step size)
   stopfitness = 1e-10;  % stop if fitness < stopfitness (minimization)
-  stopeval = 1e3*N^2;   % stop after stopeval number of function evaluations
+  stopeval = 1e3*dimensions^2;   % stop after stopeval number of function evaluations
 
   % Strategy parameter setting: Selection
-  lambda = 4+floor(3*log(N));  % population size, offspring number
+  lambda = 4+floor(3*log(dimensions));  % population size, offspring number
   
   % Additional parameters for selection and adaptation
-  [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, N);
+  [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, dimensions);
   
   % Initialize dynamic (internal) strategy parameters and constants
-  pc = zeros(N,1); ps = zeros(N,1);   % evolution paths for C and sigma
-  B = eye(N,N);                       % B defines the coordinate system
-  D = ones(N,1);                      % diagonal D defines the scaling
+  pc = zeros(dimensions,1); ps = zeros(dimensions,1);   % evolution paths for C and sigma
+  B = eye(dimensions,dimensions);                       % B defines the coordinate system
+  D = ones(dimensions,1);                      % diagonal D defines the scaling
   C = B * diag(D.^2) * B';            % covariance matrix C
   invsqrtC = B * diag(D.^-1) * B';    % C^-1/2
   eigeneval = 0;                      % track update of B and D
-  chiN=N^0.5*(1-1/(4*N)+1/(21*N^2));  % expectation of
+  chiN=dimensions^0.5*(1-1/(4*dimensions)+1/(21*dimensions^2));  % expectation of
                                       %   ||N(0,I)|| == norm(randn(N,1))
-  out.datx = [];  % for plotting output
+  out.datx = [];  out.arx = []; % for plotting output
 
   % -------------------- Extinction settings --------------------------------
   c_extinction = 0.1;                   % threshold for difference between subsequent generations to call them stagnant
-  extinction_type = 2;                  % extinction type (0 - none, 1 - directed, 2 - random)
+  if nargin < 3 extinction_type = 0; end
   p_extinction = 0.9;
   k_extinction = 0.75;
   count_stagnant = 0;                    % counter for currently stagnant generations
@@ -39,7 +42,7 @@ function xmin=purecmaes(fitness_function)
 
     % Generate and evaluate lambda offspring
     for k=1:lambda
-      arx(:,k) = xmean + sigma * B * (D .* randn(N,1)); % m + sig * Normal(0,C)
+      arx(:,k) = xmean + sigma * B * (D .* randn(dimensions,1)); % m + sig * Normal(0,C)
       arfitness(k) = feval(fitness_function, arx(:,k)); % objective function call
       counteval = counteval+1;
     end
@@ -61,7 +64,7 @@ function xmin=purecmaes(fitness_function)
             [arx, arfitness, arindex, lambda] = extinction(arx, arfitness, arindex, p_extinction, min_lambda, 0);
           end
           if lambda ~= old_lambda % Update params for new population size after extinction
-            [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, N); 
+            [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, dimensions); 
           end
         end
       else
@@ -73,7 +76,7 @@ function xmin=purecmaes(fitness_function)
     % Cumulation: Update evolution paths
     ps = (1-cs) * ps ...
           + sqrt(cs*(2-cs)*mueff) * invsqrtC * (xmean-xold) / sigma;
-    hsig = sum(ps.^2)/(1-(1-cs)^(2*counteval/lambda))/N < 2 + 4/(N+1);
+    hsig = sum(ps.^2)/(1-(1-cs)^(2*counteval/lambda))/dimensions < 2 + 4/(dimensions+1);
     pc = (1-cc) * pc ...
           + hsig * sqrt(cc*(2-cc)*mueff) * (xmean-xold) / sigma;
 
@@ -88,7 +91,7 @@ function xmin=purecmaes(fitness_function)
     sigma = sigma * exp((cs/damps)*(norm(ps)/chiN - 1));
 
     % Update B and D from C
-    if counteval - eigeneval > lambda/(c1+cmu)/N/10  % to achieve O(N^2)
+    if counteval - eigeneval > lambda/(c1+cmu)/dimensions/10  % to achieve O(N^2)
       eigeneval = counteval;
       C = triu(C) + triu(C,1)'; % enforce symmetry
       [B,D] = eig(C);           % eigen decomposition, B==normalized eigenvectors
@@ -106,23 +109,9 @@ function xmin=purecmaes(fitness_function)
   end % while, end generation loop
 
   % ------------- Final Message and Plotting Figures --------------------
-  disp(['Ostatnia iteracja: ' num2str(counteval) ', Wynik: ' num2str(arfitness(1))]);
+  disp(['Ostatnia iteracja: ' num2str(counteval) ', Wynik: ' num2str(arfitness(1)) ', Typ wymarcia: ' num2str(extinction_type)]);
   xmin = arx(:, arindex(1)); % Return best point of last iteration.
                              % Notice that xmean is expected to be even
                              % better.
-
-  % Convergence curve
-  figure(1); hold off; 
-  plot(out.datx);
-  title('Krzywe zbieżności'); 
-  grid on; xlabel('Iteracje'); ylabel('Wartość x_i = argmin_i(f)');
-
-  % Empirical cumulative distribution function plot
-  figure(2); hold on;
-  for n = 1:N 
-    ecdf(arx(n, :)); 
-  end
-  hold off;
-  title('Dystrybuanta empiryczna dla ostatniej iteracji'); 
-  grid on; ylim([0 1.1]); xlabel('x_i'); ylabel('Wartość');
+  out.arx = arx;             % Return points from last generation
 end
