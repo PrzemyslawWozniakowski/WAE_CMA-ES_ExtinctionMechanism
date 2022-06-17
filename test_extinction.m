@@ -4,11 +4,11 @@ addpath(genpath('./cec/input_data/'));
 dimensions = 20;
 f = @(x)cec22_test_func(x, 6);
 % f = @(x)simple_functions.fssphere(x);
-repetitions = 10;
+repetitions = 3;
 lambda = 50;
 
 % BASIC CMA-ES
-[x, fitnessmin, out] = repeat_cmaes(f, dimensions, repetitions, false, 0, lambda, 0, 0);
+[x, fitnessmin, out] = repeat_cmaes(f, dimensions, repetitions, true, 0, lambda, 0, 0);
 
 disp(['Podstawowy CMA-ES, fmin = ' num2str(fitnessmin) ', argmin = ' mat2str(x')]);
 figure(1);
@@ -40,7 +40,7 @@ for i = 1:length(p_extinctions)
   for j = 1:length(extinction_triggers)
     extinction_trigger = extinction_triggers(j);
     % Random extinction
-    [x, fitnessmin, out] = repeat_cmaes(f, dimensions, repetitions, false, 1, lambda, extinction_trigger, p_extinction);
+    [x, fitnessmin, out] = repeat_cmaes(f, dimensions, repetitions, true, 1, lambda, extinction_trigger, p_extinction);
     disp(['Losowe wymieranie, K = ' num2str(extinction_trigger) ', p_e = ' num2str(p_extinction) ', fmin = ' num2str(fitnessmin) ', argmin = ' mat2str(x')]);
     figure(3);
     subplot(length(p_extinctions), length(extinction_triggers), k)
@@ -62,7 +62,7 @@ for i = 1:length(p_extinctions)
 %     grid on; ylim([0 1.1]); xlabel('x_i'); ylabel('Wartość');
 %    
 %     % Targeted extinction
-%     [x, fitnessmin, out] = repeat_cmaes(f, dimensions, repetitions, false, 1, lambda, extinction_trigger, p_extinction);
+%     [x, fitnessmin, out] = repeat_cmaes(f, dimensions, repetitions, true, 1, lambda, extinction_trigger, p_extinction);
 %     disp(['Ukierunkowane wymieranie, K = ' num2str(extinction_trigger) ', p_e = ' num2str(p_extinction) ', fmin = ' num2str(fitnessmin) ', argmin = ' mat2str(x')]);
 %     figure(5);
 %     subplot(length(p_extinctions), length(extinction_triggers), k)
