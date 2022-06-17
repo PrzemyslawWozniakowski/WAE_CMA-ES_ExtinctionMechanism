@@ -1,8 +1,9 @@
-function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinction_type, seed, lambda)
+function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinction_type, seed, lambda, extinction_trigger, p_extinction)
 % fitness_function - objective/fitness function 
 % dimensions - number of objective variables/problem dimension
 % extinction type - (0 - none, 1 - directed, 2 - random)
   
+  tic
   % --------------------  Initialization --------------------------------
   % Random numbers generator
   if nargin < 4
@@ -35,18 +36,20 @@ function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinctio
   out.datx = [];  out.arx = []; % for plotting output
 
   % -------------------- Extinction settings --------------------------------
-  c_extinction = 0.1;                   % threshold for difference between subsequent generations to call them stagnant
-  p_extinction = 0.5;
-  k_extinction = 0.2;
-  count_stagnant = 0;                    % counter for currently stagnant generations
-  extinction_trigger = 20;              % limit of stagnant generations which triggers extinction 
-  min_lambda_fraction = 0.3;
-  min_lambda = min_lambda_fraction * lambda;
+  c_extinction = 0.1;                      % threshold for difference between subsequent generations to call them stagnant
+%   extinction_trigger = 20;                  % limit of stagnant generations which triggers extinction 
+%   p_extinction = 0.5;                       % probability of extinction
+  k_extinction = 0.2;                       % percentage of best species preserved by targeted extinction
+  count_stagnant = 0;                       % counter for currently stagnant generations
+  min_lambda = 0.2*lambda;  % minimal size of population after extinction
+  
   % -------------------- Generation Loop --------------------------------
   counteval = 0;  % the next 40 lines contain the 20 lines of interesting code
+  arfitness(1) = 2e30;
   while counteval < stopeval
 
     % Generate and evaluate lambda offspring
+    fitnessold = arfitness(1);
     for k=1:lambda
       arx(:,k) = xmean + sigma * B * (D .* randn(dimensions,1)); % m + sig * Normal(0,C)
       arfitness(k) = feval(fitness_function, arx(:,k)); % objective function call
@@ -60,7 +63,7 @@ function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinctio
 
     % ----------------------- Extinction ----------------------------------
     if extinction_type ~= 0  && lambda > ceil(min_lambda) % If extinction should be considered
-      if abs(norm(xmean-xold)) < c_extinction % If popuplation is stagnant, increase counter
+      if abs((arfitness(1)-fitnessold)/fitnessold) < c_extinction % If popuplation is stagnant, increase counter
         count_stagnant = count_stagnant + 1;
         if count_stagnant >= extinction_trigger
           old_lambda = lambda;
@@ -70,7 +73,9 @@ function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinctio
             [arx, arfitness, arindex, lambda] = apply_extinction(arx, arfitness, arindex, p_extinction, min_lambda);
           end
           if lambda ~= old_lambda % Update params for new population size after extinction
-            [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, dimensions); 
+            [mu, weights, mueff, cc, cs, c1, cmu, damps] = update_params(lambda, dimensions);
+            xmean = arx(:,arindex(1:mu)) * weights;  % recombination, new mean value
+            count_stagnant = 0;
           end
         end
       else
@@ -121,4 +126,5 @@ function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinctio
                              % better.
   fitnessmin = arfitness(1); % Return fitness for bes point of last iteration.
   out.arx = arx;             % Return points from last generation.
+  out.elapsed = toc;
 end
