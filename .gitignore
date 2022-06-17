@@ -11,6 +11,8 @@
 
 # Compiled MEX binaries (all platforms)
 *.mex*
+# Except for compiled binaries with CEC functions
+!cec*.mex*
 
 # Packaged app and toolbox files
 *.mlappinstall
