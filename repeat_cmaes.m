@@ -1,4 +1,4 @@
-function [xmin, fitnessmin, out]=repeat_cmaes(fitness_function, dimensions, repetitions, use_best, extinction_type, lambda)
+function [xmin, fitnessmin, out]=repeat_cmaes(fitness_function, dimensions, repetitions, use_best, extinction_type, lambda, extinction_trigger, p_extinction)
   % fitness_function - objective/fitness function 
   % dimensions - number of objective variables/problem dimension
   % extinction type - (0 - none, 1 - directed, 2 - random)
