@@ -36,9 +36,13 @@ function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinctio
   out.datx = [];  out.arx = []; % for plotting output
 
   % -------------------- Extinction settings --------------------------------
-  c_extinction = 0.1;                      % threshold for difference between subsequent generations to call them stagnant
-%   extinction_trigger = 20;                  % limit of stagnant generations which triggers extinction 
-%   p_extinction = 0.5;                       % probability of extinction
+  c_extinction = 0.05;                      % threshold for difference between subsequent generations to call them stagnant
+  if nargin < 6
+      extinction_trigger = 20;                  % limit of stagnant generations which triggers extinction
+  end
+  if nargin < 7
+      p_extinction = 0.5;                   % probability of extinction
+  end
   k_extinction = 0.2;                       % percentage of best species preserved by targeted extinction
   count_stagnant = 0;                       % counter for currently stagnant generations
   min_lambda = 0.2*lambda;  % minimal size of population after extinction
