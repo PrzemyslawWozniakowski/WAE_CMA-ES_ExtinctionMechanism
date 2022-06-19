@@ -1,7 +1,16 @@
 function [xmin, fitnessmin, out]=repeat_cmaes(fitness_function, dimensions, repetitions, use_best, extinction_type, lambda, extinction_trigger, p_extinction)
-  % fitness_function - objective/fitness function 
-  % dimensions - number of objective variables/problem dimension
-  % extinction type - (0 - none, 1 - directed, 2 - random)
+% REPEAT_CMAES uses the cmaes function in a loop.
+% fitness_function - objective/fitness function 
+% dimensions - number of objective variables/problem dimension
+% repetitions - amount of times to repeat the usage of cmaes function
+% use_best - wether last solution should be returned or average value
+% extinction type - (0 - none, 1 - directed, 2 - random)
+% seed - seed of the random number generator
+% lambda - population size
+% extinction_trigger - how many stagnant iterations are needed for
+% extinction
+% p_extinction - probability of extinction
+
   if nargin < 6
     lambda = 310;
   end

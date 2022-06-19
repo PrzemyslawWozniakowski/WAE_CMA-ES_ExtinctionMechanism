@@ -1,8 +1,15 @@
 function [xmin, fitnessmin, out] = cmaes(fitness_function, dimensions, extinction_type, seed, lambda, extinction_trigger, p_extinction)
+% CMAES solves the problem of minimalization of function using CMA-ES
+% algorithm. Potentially uses extinction mechanism.
 % fitness_function - objective/fitness function 
 % dimensions - number of objective variables/problem dimension
 % extinction type - (0 - none, 1 - directed, 2 - random)
-  
+% seed - seed of the random number generator
+% lambda - population size
+% extinction_trigger - how many stagnant iterations are needed for
+% extinction
+% p_extinction - probability of extinction
+
   tic
   % --------------------  Initialization --------------------------------
   % Random numbers generator
