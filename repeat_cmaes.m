@@ -1,7 +1,13 @@
 function [xmin, fitnessmin, out]=repeat_cmaes(fitness_function, dimensions, repetitions, use_best, extinction_type, lambda, extinction_trigger, p_extinction)
-  % fitness_function - objective/fitness function 
+  % fitness_function - objective/fitness function
   % dimensions - number of objective variables/problem dimension
   % extinction type - (0 - none, 1 - directed, 2 - random)
+  if nargin < 8
+    p_extinction = 0.5;
+  end
+  if nargin < 7
+    extinction_trigger = 20;
+  end
   if nargin < 6
     lambda = 310;
   end
@@ -11,7 +17,7 @@ function [xmin, fitnessmin, out]=repeat_cmaes(fitness_function, dimensions, repe
 
   rng(0) % Change 0 to another non-negative integer for different set of results or to 'shuffle' for random results each time
   seeds = randi(2^31, repetitions, 1);
-  
+
   xmin = zeros(dimensions, 1);
   fitnessmin = 2^31;
   out.datx = [];
