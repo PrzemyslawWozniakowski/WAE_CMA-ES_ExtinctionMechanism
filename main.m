@@ -1,7 +1,7 @@
 dimensions = 13;
 
 for extinction_type = 0:2
-  [x, out] = repeat_cmaes(@simple_functions.frosenbrock, dimensions, 5, extinction_type);
+  [x, ~, out] = repeat_cmaes(@simple_functions.frastrigin10, dimensions, 15, true, extinction_type);
 
   % Convergence curve
   figure(1);
